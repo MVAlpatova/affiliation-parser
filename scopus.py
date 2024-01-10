@@ -70,22 +70,22 @@ def get_author_details(affiliations, aliases):
 def construct_bibliography_reference(row):
     authors = row['Авторы организаций'].split("; ")
     authors_str = ", ".join([get_name_part(author) for author in authors])
-    year = int(row['Год']) if pd.notna(row['Год']) else None
+    year = f" {int(row['Год'])} " if pd.notna(row['Год']) else ""
 
-    tom = f", {row['Том']}" if pd.notna(row['Том']) else ""
+    tom = f", {row['Том']}" if row['Том'] != "" else ""
 
     if tom != "":
-        issue = f" ({row['Выпуск ']})" if pd.notna(row['Выпуск ']) else ""
+        issue = f" ({row['Выпуск ']})" if row['Выпуск '] != "" else ""
     else:
-        issue = f", Выпуск {row['Выпуск ']}" if pd.notna(row['Выпуск ']) else ""
+        issue = f", Выпуск {row['Выпуск ']}" if row['Выпуск '] != "" else ""
 
-    article_number = f", Статья № {row['Статья №']}" if pd.notna(row['Статья №']) else ""
+    article_number = f", Статья № {row['Статья №']}" if row['Статья №'] != "" else ""
 
-    start_page = int(row['Страница начала']) if pd.notna(row['Страница начала']) else None
-    end_page = int(row['Страница окончания']) if pd.notna(row['Страница окончания']) else None
-    pages = f", pp. {start_page}-{end_page}" if start_page is not None and end_page is not None else ""
+    start_page = row['Страница начала'] if row['Страница начала'] != "" else None
+    end_page = row['Страница окончания'] if row['Страница окончания'] != "" else None
+    pages = f", pp. {start_page}-{end_page}" if start_page != "" and end_page != "" else ""
 
-    return f"{authors_str} {row['Название']} ({year}) {row['Название источника']}{tom}{issue}{article_number}{pages}".strip()
+    return f"{authors_str} {row['Название']}{year}{row['Название источника']}{tom}{issue}{article_number}{pages}".strip()
 
 
 def extract_organization_names(workplaces):
@@ -153,7 +153,7 @@ if file_path:
             'Количество авторов *': len(authors),
             'Фамилия *': ", ".join(last_names),
             'Имя *': ", ".join(second_names),
-            'Количество аффиляций *': workplaces_count,
+            'Количество аффилиаций *': workplaces_count,
             'Аффиляция *': ", ".join(organization_names),
             'Контрибьюция *': contribution,
             'Дата публикации *': year,
