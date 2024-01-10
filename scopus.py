@@ -1,6 +1,8 @@
+import datetime
+
 import pandas as pd
 
-from dict import all_countries, possible_names, file_path, show_popup
+from dict import all_countries, possible_names, file_path, show_popup, publication_type_translations
 
 # Split the countries string into a list
 all_countries_list = all_countries.split("; ")
@@ -53,33 +55,131 @@ def calculate_contribution(input_str, aliases, all_countries):
     return polytech_contribution / total_authors_count if total_authors_count else 0
 
 
+def get_author_details(affiliations, aliases):
+    authors_with_affiliation = []
+    for affiliation in affiliations:
+        author_name = get_name_part(affiliation)
+        orgs = affiliation[len(author_name) + 1:].strip()
+        places_of_work = extract_and_split_by_countries(orgs, all_countries_list)
+        is_polytech = any(alias.lower() in work.lower() for work in places_of_work for alias in aliases)
+        if is_polytech:
+            authors_with_affiliation.append(author_name)
+    return authors_with_affiliation
+
+
+def construct_bibliography_reference(row):
+    authors = row['Авторы организаций'].split("; ")
+    authors_str = ", ".join([get_name_part(author) for author in authors])
+    year = int(row['Год']) if pd.notna(row['Год']) else None
+
+    tom = f", {row['Том']}" if pd.notna(row['Том']) else ""
+
+    if tom != "":
+        issue = f" ({row['Выпуск ']})" if pd.notna(row['Выпуск ']) else ""
+    else:
+        issue = f", Выпуск {row['Выпуск ']}" if pd.notna(row['Выпуск ']) else ""
+
+    article_number = f", Статья № {row['Статья №']}" if pd.notna(row['Статья №']) else ""
+
+    start_page = int(row['Страница начала']) if pd.notna(row['Страница начала']) else None
+    end_page = int(row['Страница окончания']) if pd.notna(row['Страница окончания']) else None
+    pages = f", pp. {start_page}-{end_page}" if start_page is not None and end_page is not None else ""
+
+    return f"{authors_str} {row['Название']} ({year}) {row['Название источника']}{tom}{issue}{article_number}{pages}".strip()
+
+
+def extract_organization_names(workplaces):
+    organization_names = []
+    for workplace in workplaces:
+        # Split by the comma and take the first element, which is the organization name
+        name = workplace.split(",")[0].strip()
+        organization_names.append(name)
+    return organization_names
+
+
 # Check if a file was selected
 if file_path:
     # Here you would add your logic to process the file and compute the output
-    scopus_data = pd.read_csv(file_path)
+    try:
+        scopus_data = pd.read_csv(file_path)
+    except:
+        scopus_data = pd.read_csv(file_path, delimiter=';')
 
-    # Filter the DataFrame
-    filtered_scopus_data = scopus_data[scopus_data['Тип документа'].isin(['Article', 'Review'])]
+    # Create a copy of the filtered DataFrame to avoid the SettingWithCopyWarning
+    filtered_scopus_data = scopus_data[scopus_data['Тип документа'].isin(['Article', 'Review'])].copy()
 
     # Initialize the total contribution variable
     total_contribution = 0
 
-    # Iterate over each row in the DataFrame
+    # Initialize an empty list for the new CSV data
+    additional_data = []
+
     for index, row in filtered_scopus_data.iterrows():
-        # Call the calculate_contribution function for the 'Авторы организаций' column of the current row
-        contribution = calculate_contribution(row['Авторы организаций'], possible_names, all_countries_list)
 
-        # Get the value from the 'Название' column
-        title = row['Название']
+        contribution = round(calculate_contribution(row['Авторы организаций'], possible_names, all_countries_list), 2)
 
-        # Print the row index, title from 'Название' column, and the calculated contribution
-        print(f"[{index}] {title} - {contribution}")
+        authors = row['Авторы организаций'].split("; ")
+        authors_with_affiliation = get_author_details(authors, possible_names)
+
+        # Extract last and second names
+        last_names = [name.split(",")[0] for name in authors_with_affiliation]
+        second_names = [name.split(",")[1] if len(name.split(",")) > 1 else "" for name in authors_with_affiliation]
+
+        # Extract the places of work with the existing function
+        places_of_work = [extract_and_split_by_countries(aff[len(get_name_part(aff)) + 1:].strip(), all_countries_list)
+                          for aff in authors if any(alias.lower() in aff.lower() for alias in possible_names)]
+
+        # Extract just the organization names from the places of work
+        organization_names = [name for place in places_of_work for name in extract_organization_names(place)]
+
+        # Count the unique workplaces while preserving the order they were found
+        seen = set()
+        unique_workplaces = [x for x in organization_names if not (x in seen or seen.add(x))]
+        workplaces_count = len(unique_workplaces)
+
+        bibliography_reference = construct_bibliography_reference(row)
+
+        # Convert year to integer if it's not NaN
+        year = int(row['Год']) if pd.notna(row['Год']) else None
 
         # Add the calculated contribution to the total contribution
         total_contribution += contribution
 
-    # After the loop, if you want to print the total contribution, you can do so:
-    print(f"Общий вклад: {total_contribution}")
+        # Translate publication type to Russian
+        publication_type_russian = publication_type_translations.get(row['Тип документа'], row['Тип документа'])
+
+        additional_data.append({
+            'Идентификатор DOI *': row['DOI'],
+            'Количество авторов *': len(authors),
+            'Фамилия *': ", ".join(last_names),
+            'Имя *': ", ".join(second_names),
+            'Количество аффиляций *': workplaces_count,
+            'Аффиляция *': ", ".join(organization_names),
+            'Контрибьюция *': contribution,
+            'Дата публикации *': year,
+            'Наименование публикации *': row['Название'],
+            'Наименование издания *': row['Название источника'],
+            'Библиографическая ссылка *': bibliography_reference,
+            'Вид издания  *': publication_type_russian
+        })
+
+        # Print the row index, title from 'Название' column, and the calculated contribution
+        print(f"[{index}] {row['Название']} - {contribution}")
+
+    # Create DataFrame from additional data and export to CSV
+    additional_data_df = pd.DataFrame(additional_data)
+
+    # Get the current date and time
+    now = datetime.datetime.now()
+
+    # Format the current date and time as a string
+    now_str = now.strftime("[%Y-%m-%d] [%H-%M-%S]")
+
+    # Specify the directory and filename with the current date and time
+    filename = f"SCOPUS/{now_str} reformatted_scopus_data.csv"
+
+    # Save the DataFrame to a CSV file in the specified directory with the specified filename
+    additional_data_df.to_csv(filename, index=False)
 
     # Show the system popup with the output value
     show_popup(f"Коэффициент участия МосПолитеха: {round(total_contribution, 2)}")

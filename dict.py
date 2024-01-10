@@ -43,6 +43,16 @@ U.S. Outlying Islands; U.S. Virgin Islands; Uganda; Ukraine; United Arab Emirate
 Uzbekistan; Vanuatu; Vatican City; Venezuela; Vietnam; Wallis & Futuna; Western Sahara; Yemen; Zambia; Zimbabwe
 """
 
+# Define the list of all possible publication types
+publication_type_translations = {
+    'Article': 'Статья',
+    'Book Chapter': 'Глава книги',
+    'Conference Paper': 'Материалы конференции',
+    'Editorial': 'Редакционная статья',
+    'Erratum': 'Эрратум',
+    'Review': 'Обзор'
+}
+
 
 # Function to show a system popup message
 def show_popup(message):
