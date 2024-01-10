@@ -11,7 +11,9 @@ possible_names = [
     "Moscow Polytechnical University",
     "Moscow State Polytech Univ",
     "Moscow Polytech Univ",
-    'Moscow Polytech University'
+    'Moscow Polytech University',
+    'FGBOU VO Moscow Polytech Univ',
+    'Moscow Politech Univ'
 ]
 
 # Define the list of all countries
@@ -48,6 +50,7 @@ publication_type_translations = {
     'Article': 'Статья',
     'Book Chapter': 'Глава книги',
     'Conference Paper': 'Материалы конференции',
+    'Proceedings Paper': 'Материалы конференции',
     'Editorial': 'Редакционная статья',
     'Erratum': 'Эрратум',
     'Review': 'Обзор'

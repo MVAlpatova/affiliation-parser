@@ -10,10 +10,31 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\SCOPUS\[2024-01-10] [12-30-49] reformatted_scopus_data.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\WOS\[2024-01-10] [15-19-26] reformatted_wos_data.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\additional_scopus_data.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\new_wos_data.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
             </Attribute>
           </value>
         </entry>
@@ -32,6 +53,13 @@
           </value>
         </entry>
         <entry key="\scopus.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\wos.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />
