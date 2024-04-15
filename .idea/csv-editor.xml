@@ -3,14 +3,21 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
-        <entry key="\SCOPUS\2024-01-10_12-20-15_reformatted_scopus_data.csv">
+        <entry key="C:\Users\admin\Desktop\Id.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\SCOPUS\[2024-01-10] [12-30-49] reformatted_scopus_data.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
             </Attribute>
           </value>
         </entry>
-        <entry key="\SCOPUS\[2024-01-10] [12-30-49] reformatted_scopus_data.csv">
+        <entry key="\SCOPUS\[2024-04-15] [15-14-47] reformatted_scopus_data.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -24,21 +31,14 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\additional_scopus_data.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\new_wos_data.csv">
+        <entry key="\scopus-author\Names.csv">
           <value>
             <Attribute>
               <option name="separator" value=";" />
             </Attribute>
           </value>
         </entry>
-        <entry key="\scopus (16).csv">
+        <entry key="\scopus-author\Scopus.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -49,13 +49,6 @@
           <value>
             <Attribute>
               <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\scopus.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
             </Attribute>
           </value>
         </entry>

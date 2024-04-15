@@ -67,7 +67,7 @@ root = tk.Tk()
 root.withdraw()  # We don't want a full GUI, so keep the root window from appearing
 
 # Show the file dialog
-file_path = filedialog.askopenfilename(
-    title="Выберите файл CSV с данными из Scopus",
-    filetypes=(("CSV files", "*.csv"), ("all files", "*.*"))
-)
+#file_path = filedialog.askopenfilename(
+#    title="Выберите файл CSV с данными из Scopus",
+#    filetypes=(("CSV files", "*.csv"), ("all files", "*.*"))
+#)

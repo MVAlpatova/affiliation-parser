@@ -1,8 +1,8 @@
 import datetime
-
 import pandas as pd
-
 from dict import all_countries, possible_names, file_path, show_popup, publication_type_translations
+from pathlib import Path
+
 
 # Split the countries string into a list
 all_countries_list = all_countries.split("; ")
@@ -68,24 +68,24 @@ def get_author_details(affiliations, aliases):
 
 
 def construct_bibliography_reference(row):
-    authors = row['Авторы организаций'].split("; ")
+    authors = row['Authors with affiliations'].split("; ")
     authors_str = ", ".join([get_name_part(author) for author in authors])
-    year = f" {int(row['Год'])} " if pd.notna(row['Год']) else ""
+    year = f" {int(row['Year'])} " if pd.notna(row['Year']) else ""
 
-    tom = f", {row['Том']}" if row['Том'] != "" else ""
+    tom = f", {row['Volume']}" if row['Volume'] != "" else ""
 
     if tom != "":
-        issue = f" ({row['Выпуск ']})" if row['Выпуск '] != "" else ""
+        issue = f" ({row['Issue']})" if row['Issue'] != "" else ""
     else:
-        issue = f", Выпуск {row['Выпуск ']}" if row['Выпуск '] != "" else ""
+        issue = f", Issue{row['Issue']}" if row['Issue'] != "" else ""
 
-    article_number = f", Статья № {row['Статья №']}" if row['Статья №'] != "" else ""
+    article_number = f", Art. No. {row['Art. No.']}" if row['Art. No.'] != "" else ""
 
-    start_page = row['Страница начала'] if row['Страница начала'] != "" else None
-    end_page = row['Страница окончания'] if row['Страница окончания'] != "" else None
+    start_page = row['Page start'] if row['Page start'] != "" else None
+    end_page = row['Page end'] if row['Page end'] != "" else None
     pages = f", pp. {start_page}-{end_page}" if start_page != "" and end_page != "" else ""
 
-    return f"{authors_str} {row['Название']}{year}{row['Название источника']}{tom}{issue}{article_number}{pages}".strip()
+    return f"{authors_str} {row['Title']}{year}{row['Source title']}{tom}{issue}{article_number}{pages}".strip()
 
 
 def extract_organization_names(workplaces):
@@ -106,7 +106,7 @@ if file_path:
         scopus_data = pd.read_csv(file_path, delimiter=';')
 
     # Create a copy of the filtered DataFrame to avoid the SettingWithCopyWarning
-    filtered_scopus_data = scopus_data[scopus_data['Тип документа'].isin(['Article', 'Review'])].copy()
+    filtered_scopus_data = scopus_data[scopus_data['Document Type'].isin(['Article', 'Review'])].copy()
 
     # Initialize the total contribution variable
     total_contribution = 0
@@ -116,9 +116,9 @@ if file_path:
 
     for index, row in filtered_scopus_data.iterrows():
 
-        contribution = round(calculate_contribution(row['Авторы организаций'], possible_names, all_countries_list), 2)
+        contribution = round(calculate_contribution(row['Authors with affiliations'], possible_names, all_countries_list), 2)
 
-        authors = row['Авторы организаций'].split("; ")
+        authors = row['Authors with affiliations'].split("; ")
         authors_with_affiliation = get_author_details(authors, possible_names)
 
         # Extract last and second names
@@ -140,13 +140,13 @@ if file_path:
         bibliography_reference = construct_bibliography_reference(row)
 
         # Convert year to integer if it's not NaN
-        year = int(row['Год']) if pd.notna(row['Год']) else None
+        year = int(row['Year']) if pd.notna(row['Year']) else None
 
         # Add the calculated contribution to the total contribution
         total_contribution += contribution
 
         # Translate publication type to Russian
-        publication_type_russian = publication_type_translations.get(row['Тип документа'], row['Тип документа'])
+        publication_type_russian = publication_type_translations.get(row['Document Type'], row['Document Type'])
 
         additional_data.append({
             'Идентификатор DOI *': row['DOI'],
@@ -157,14 +157,14 @@ if file_path:
             'Аффиляция *': ", ".join(organization_names),
             'Контрибьюция *': contribution,
             'Дата публикации *': year,
-            'Наименование публикации *': row['Название'],
-            'Наименование издания *': row['Название источника'],
+            'Наименование публикации *': row['Title'],
+            'Наименование издания *': row['Source title'],
             'Библиографическая ссылка *': bibliography_reference,
             'Вид издания  *': publication_type_russian
         })
 
         # Print the row index, title from 'Название' column, and the calculated contribution
-        print(f"[{index}] {row['Название']} - {contribution}")
+        print(f"[{index}] {row['Title']} - {contribution}")
 
     # Create DataFrame from additional data and export to CSV
     additional_data_df = pd.DataFrame(additional_data)
@@ -174,6 +174,9 @@ if file_path:
 
     # Format the current date and time as a string
     now_str = now.strftime("[%Y-%m-%d] [%H-%M-%S]")
+
+    # Create a new directory named 'SCOPUS' if it doesn't exist
+    Path("SCOPUS").mkdir(exist_ok=True)
 
     # Specify the directory and filename with the current date and time
     filename = f"SCOPUS/{now_str} reformatted_scopus_data.csv"
