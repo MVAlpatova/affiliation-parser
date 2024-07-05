@@ -4,19 +4,7 @@ import datetime
 import pandas as pd
 
 from dict import possible_names, file_path, show_popup, publication_type_translations
-
-# Constants
-AFFILIATION_END_SYMBOL = ";"
-AUTHORS_SEPARATOR = ";"
-START_BRACKET = "["
-END_BRACKET = "]"
-
-
-class Affiliation:
-    def __init__(self, authors, work_place, is_from_polytech):
-        self.authors = authors
-        self.work_place = work_place
-        self.is_from_polytech = is_from_polytech
+from global_methods import wos_parse_affiliations, wos_get_distinct_authors
 
 
 def fix_string(input_string):
@@ -45,52 +33,13 @@ def fix_string(input_string):
     return output_string
 
 
-def parse_affiliation(affiliation_text):
-    startIndex = affiliation_text.find(START_BRACKET)
-    endIndex = affiliation_text.find(END_BRACKET)
-    authorsText = affiliation_text[startIndex + 1:endIndex]
-    workPlace = affiliation_text[endIndex + 2:].strip()
 
-    authors = [author.strip() for author in authorsText.split(AUTHORS_SEPARATOR)]
-    is_from_polytech = any(workPlace.startswith(univ) for univ in possible_names)
-
-    return Affiliation(authors, workPlace, is_from_polytech)
-
-
-def parse_affiliations(input_text):
-    affiliations = []
-    current_affiliation = ""
-    is_in_bracket = False
-
-    for symbol in input_text:
-        if symbol == START_BRACKET:
-            is_in_bracket = True
-        elif symbol == END_BRACKET:
-            is_in_bracket = False
-
-        if symbol == AFFILIATION_END_SYMBOL and not is_in_bracket:
-            affiliations.append(parse_affiliation(current_affiliation))
-            current_affiliation = ""
-        else:
-            current_affiliation += symbol
-
-    if current_affiliation:
-        affiliations.append(parse_affiliation(current_affiliation))
-
-    return affiliations
-
-
-def get_distinct_authors(affiliations):
-    authors = set()
-    for affiliation in affiliations:
-        authors.update(affiliation.authors)
-    return list(authors)
 
 
 def calculate_contribution(input_text):
     fixed_input_text = fix_string(input_text)
-    affiliations = parse_affiliations(fixed_input_text)
-    authors = get_distinct_authors(affiliations)
+    affiliations = wos_parse_affiliations(fixed_input_text)
+    authors = wos_get_distinct_authors(affiliations)
 
     author_map = {author: {'TotalAffiliations': 0, 'PolyAffiliations': 0} for author in authors}
 
@@ -206,7 +155,7 @@ def affiliation_parser(csv_file_path):
         reader = csv.DictReader(file, delimiter=';')
         for row in reader:
             if row['Document Type'] in ['Article', 'Proceedings Paper']:
-                affiliations = parse_affiliations(row['Addresses'])
+                affiliations = wos_parse_affiliations(row['Addresses'])
                 total_sum += calculate_contribution(row['Addresses'])
                 new_csv_data.append(create_new_csv_entry(row, affiliations))
 

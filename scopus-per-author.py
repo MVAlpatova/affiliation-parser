@@ -2,6 +2,8 @@ import pandas as pd
 from dict import all_countries, possible_names
 import numpy as np
 
+from global_methods import merge_faculty_with_ids
+
 
 def get_name_part(input_str):
     first_comma_index = input_str.find(",")
@@ -64,17 +66,8 @@ def calculate_author_contribution(author, affiliations_str, aliases):
 
 
 # Load the CSV files
-df_names = pd.read_csv('scopus-author/Names.csv', delimiter=';', low_memory=False)
-df_id = pd.read_csv('scopus-author/Id.csv', delimiter=';')
-
-# Filter rows where 'Вид занятости' equals 'Основное место работы'
-df_names = df_names[df_names['Вид занятости'] == 'Основное место работы']
-
-# Rename the column in df_names
-df_names = df_names.rename(columns={'Сотрудник': 'Name'})
-
-# Merge the two dataframes using a left join
-df_merged = pd.merge(df_names, df_id, on='Name', how='left')
+faculty = "ИИДИЖ"
+df_merged = merge_faculty_with_ids(faculty)
 
 # Fill NaN values in 'Scopus' column with an empty string
 df_merged['Scopus'] = df_merged['Scopus'].fillna('')
@@ -86,7 +79,7 @@ df_final = df_merged[['Name', 'Scopus']]
 df_final = df_final.dropna(subset=['Name'])
 
 # Load the Scopus.csv file
-df_scopus = pd.read_csv('scopus-author/Scopus.csv')
+df_scopus = pd.read_csv('input/Scopus.csv')
 
 # Create an empty DataFrame to store the results
 df_results = pd.DataFrame(columns=['Author', 'Scopus ID', 'Scopus Article'])
@@ -122,7 +115,7 @@ for index, row in df_results.iterrows():
     # Find the row in df_scopus where 'Title' matches the 'Scopus Article'
     matching_row = df_scopus[df_scopus['Title'] == row['Scopus Article']].iloc[0]
 
-    if row['Scopus Article'] == 'Substantiating and Implementing Concept of Digital Twins for Virtual Commissioning of Industrial Mechatronic Complexes Exemplified by Rolling Mill Coilers':
+    if row['Scopus Article'] == 'Preface':
         print(matching_row)
 
     # Extract the 'Authors' and 'Author(s) ID' strings and split them by semicolon
@@ -145,13 +138,15 @@ for index, row in df_results.iterrows():
     df_results.loc[index, 'Total Authors Count'] = len(authors)
 
     # Calculate the author's contribution and places of work
-    author_contribution, places_of_work = calculate_author_contribution(author_name, authors_with_affiliations, possible_names)
+    author_contribution, places_of_work = calculate_author_contribution(author_name, authors_with_affiliations,
+                                                                        possible_names)
     df_results.loc[index, 'Author Contribution'] = np.round(author_contribution, 2)
 
     # Add the workplaces count to the row
     df_results.loc[index, 'Workplaces Count'] = len(places_of_work)
 
 # Print the final dataframe
+df_results = df_results.dropna()
 print(df_results)
 
 # Convert 'Total Authors Count' and 'Workplaces Count' to integers
@@ -159,4 +154,4 @@ df_results['Total Authors Count'] = df_results['Total Authors Count'].astype(int
 df_results['Workplaces Count'] = df_results['Workplaces Count'].astype(int)
 
 # Save the DataFrame to a CSV file
-df_results.to_csv('final_results.csv', index=False)
+df_results.to_csv(faculty + '_final_results.csv', index=False)

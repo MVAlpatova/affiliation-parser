@@ -13,7 +13,9 @@ possible_names = [
     "Moscow Polytech Univ",
     'Moscow Polytech University',
     'FGBOU VO Moscow Polytech Univ',
-    'Moscow Politech Univ'
+    'Moscow Politech Univ',
+    'Médico Moscow Polytechnic University',
+    'Moscow Polytechnic University (Moscow Polytech)',
 ]
 
 # Define the list of all countries
@@ -67,7 +69,7 @@ root = tk.Tk()
 root.withdraw()  # We don't want a full GUI, so keep the root window from appearing
 
 # Show the file dialog
-#file_path = filedialog.askopenfilename(
-#    title="Выберите файл CSV с данными из Scopus",
-#    filetypes=(("CSV files", "*.csv"), ("all files", "*.*"))
-#)
+file_path = filedialog.askopenfilename(
+    title="Выберите файл CSV с данными из Scopus",
+    filetypes=(("CSV files", "*.csv"), ("all files", "*.*"))
+)

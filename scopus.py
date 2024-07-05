@@ -17,7 +17,7 @@ def get_name_part(input_str):
         if second_comma_index == -1:  # Only one comma in the string
             return input_str
         else:
-            return input_str[:second_comma_index].strip()
+            return input_str[:first_comma_index].strip()
 
 
 def extract_and_split_by_countries(input_val, all_countries):
@@ -92,8 +92,8 @@ def extract_organization_names(workplaces):
     organization_names = []
     for workplace in workplaces:
         # Split by the comma and take the first element, which is the organization name
-        name = workplace.split(",")[0].strip()
-        organization_names.append(name)
+        #name = workplace.split(",")[0].strip()
+        organization_names.append(workplace)
     return organization_names
 
 
@@ -122,8 +122,8 @@ if file_path:
         authors_with_affiliation = get_author_details(authors, possible_names)
 
         # Extract last and second names
-        last_names = [name.split(",")[0] for name in authors_with_affiliation]
-        second_names = [name.split(",")[1] if len(name.split(",")) > 1 else "" for name in authors_with_affiliation]
+        last_names = [name.split(" ")[0] for name in authors_with_affiliation]
+        second_names = [name.split(" ")[1] if len(name.split(" ")) > 1 else "" for name in authors_with_affiliation]
 
         # Extract the places of work with the existing function
         places_of_work = [extract_and_split_by_countries(aff[len(get_name_part(aff)) + 1:].strip(), all_countries_list)
